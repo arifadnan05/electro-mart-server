@@ -9,14 +9,14 @@ const port = process.env.PORT || 4000;
 //middleware 
 
 app.use(
-    cors({
-        origin: [
-            "http://localhost:5173",
-            "http://localhost:5174"
-        ],
-        credentials: true,
-        optionSuccessStatus: 200,
-    })
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174"
+    ],
+    credentials: true,
+    optionSuccessStatus: 200,
+  })
 );
 app.use(express.json())
 
@@ -37,6 +37,19 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const productsCollection = client.db('electro-mart').collection('products')
+
+
+
+    app.get('/products', async (req, res) => {
+      const result = await productsCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.get('/products-count', async (req, res) => {
+      const count = await productsCollection.estimatedDocumentCount();
+      res.send({ count })
+    })
 
 
 
@@ -54,8 +67,8 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Electro Mart server is running')
-  })
-  app.listen(port, () => {
-    console.log(`Electro Mart server is running on port ${port}`)
-  })
+  res.send('Electro Mart server is running')
+})
+app.listen(port, () => {
+  console.log(`Electro Mart server is running on port ${port}`)
+})
