@@ -42,22 +42,57 @@ async function run() {
 
 
 
+    // app.get('/products', async (req, res) => {
+    //   const filter = req.query;
+    //   const query = {
+    //     price : {$lt: 150}
+    //   }
+    //   const options = {
+    //     sort: {
+    //       price: filter.sort === 'asc' ? 1 : -1
+    //     }
+    //   }
+    //   const page = parseInt(req.query.page)
+    //   const size = parseInt(req.query.size)
+    //   const result = await productsCollection.find(query, options)
+    //   .skip(page * size)
+    //   .limit(size)
+    //   .toArray()
+    //   res.send(result)
+    // })
+
     app.get('/products', async (req, res) => {
       const filter = req.query;
-      const query = {}
-      const options = {
-        sort: {
-          price: filter.sort === 'asc' ? 1 : -1
-        }
+      let query = {};
+  
+      // Price range filtering
+      if (filter.minPrice || filter.maxPrice) {
+          query.price = {};
+          if (filter.minPrice) {
+              query.price.$gte = parseInt(filter.minPrice); // Greater than or equal to minPrice
+          }
+          if (filter.maxPrice) {
+              query.price.$lte = parseInt(filter.maxPrice); // Less than or equal to maxPrice
+          }
       }
-      const page = parseInt(req.query.page)
-      const size = parseInt(req.query.size)
+  
+      const options = {
+          sort: {
+              price: filter.sort === 'asc' ? 1 : -1
+          }
+      };
+  
+      const page = parseInt(req.query.page) || 0;
+      const size = parseInt(req.query.size) || 10;
+  
       const result = await productsCollection.find(query, options)
-      .skip(page * size)
-      .limit(size)
-      .toArray()
-      res.send(result)
-    })
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+  
+      res.send(result);
+  });
+  
 
     app.get('/products-count', async (req, res) => {
       const count = await productsCollection.estimatedDocumentCount();
